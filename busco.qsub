@@ -1,0 +1,62 @@
+#!/bin/bash -l
+#
+# Run this file using 'qsub testqsub.qsub'
+# Evan Kristiansen 2016
+
+# All lines starting with "#$" are SGE qsub commands
+
+# Specify a project to run under
+#$ -P mullenl
+
+# Give this job a name CHANGE
+#$ -N busco_new
+
+# Join standard output and error to a single file
+#$ -j y
+
+# Name the file where to redirect standard output and error
+# CHANGE
+#$ -o limenitis_log
+
+# Send an email when the job begins and when it ends running
+# -m eas
+
+# Request a large memory node, this will affect your queue time, but it's better to overestimate
+#$ -l mem_per_core=8G
+
+# Request more cores, this will affect your queue time, make sure your program supports multithreading, or it's a waste
+#$ -pe omp 1
+
+# Now we write the script that the compute node will work on.
+
+# First, let's keep track of some information just in case anything goes wrong
+echo "=========================================================="
+echo "Starting on : $(date)"
+echo "Running on node : $(hostname)"
+echo "Current directory : $(pwd)"
+echo "Current job ID : $JOB_ID"
+echo "Current job name : $JOB_NAME"
+echo "Task index number : $SGE_TASK_ID"
+echo "=========================================================="
+
+# load any modules you might use
+# python/2.7.7 is the newest we have and has libraries that the standard version does not.
+module load python3
+module load blast+/2.7.1
+module load hmmer/3.2.1
+module load augustus/3.3.2
+module load busco/3.0.2
+# do some work
+
+python BUSCO.py -i Rangel_Limenitis_arthemis_astyanax_4tissue_Trinity.fasta -o Limenitis -l /projectnb/mullenl/kate/annotated_trinity_assemblies/insecta_odb9  -m transcriptome 
+
+#statements
+# do other work if needed.
+
+echo "=========================================================="
+echo "Finished on : $(date)"
+echo "=========================================================="
+
+
+
+
