@@ -1,0 +1,70 @@
+#!/bin/bash -l
+#
+# Run this file using 'qsub 5_sensory_alignment_prep.qsub'
+# Kathryn Atherton 2020
+
+# All lines starting with "#$" are SGE qsub commands
+
+# Specify a project to run under
+#$ -P mullenl
+
+# Give this job a name
+#$ -N alignment_prep
+
+# Join standard output and error to a single file
+#$ -j y
+
+# Name the file where to redirect standard output and error
+#$ -o prep_log
+
+# Send an email when the job begins and when it ends running
+# -m e
+
+# Request a large memory node, this will affect your queue time, but it's better to overestimate
+#$ -l mem_per_core=8G
+
+# Request more cores, this will affect your queue time, make sure your program supports multithreading, or it's a waste
+#$ -pe omp 1
+
+# Now we write the script that the compute node will work on.
+
+# First, let's keep track of some information just in case anything goes wrong
+echo "=========================================================="
+echo "Starting on : $(date)"
+echo "Running on node : $(hostname)"
+echo "Current directory : $(pwd)"
+echo "Current job ID : $JOB_ID"
+echo "Current job name : $JOB_NAME"
+echo "Task index number : $SGE_TASK_ID"
+echo "=========================================================="
+
+# load any modules you might use
+# python/2.7.7 is the newest we have and has libraries that the standard version does not.
+
+
+# do some work
+
+while read i; do
+	busco="$i"
+	# CHANGE THE PATH TO WHEREVER YOUR BUSCO TABLES ARE (RESULTING FROM R SCRIPT)
+	inname=annotated_fastas/"$busco".csv
+	# CHANGE THE PATH TO WHEREVER YOUR SENSORY GENE FASTA FILES ARE
+	outname=sensory_fastas/"$busco".fasta
+	IFS=","
+	cat $inname | while read f1 f2; do
+		# CHANGE THE PATH TO WHEREVER YOUR ANNOTATED FASTA FILES ARE
+		fasta="annotated_fastas/oneline_${f2}.fasta"
+		var=$(grep ">$f1" -w -A 1 "$fasta" | grep -v ">$f1"); if ! [ -z "$var" ]; then printf ">$f2\n$var\n" >> "$outname"; fi; 
+	done
+done < annotated_fastas/sensory_buscos.txt # CHANGE THE PATH TO WHERE THE TEXT FILE IS WITH THE LIST OF SENSORY BUSCO FILES IS (produced by R script)
+
+#statements
+# do other work if needed.
+
+echo "=========================================================="
+echo "Finished on : $(date)"
+echo "=========================================================="
+
+
+
+

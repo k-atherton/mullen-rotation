@@ -1,22 +1,29 @@
 #!/bin/bash -l
 #
-# Run this file using 'qsub testqsub.qsub'
-# Evan Kristiansen 2016
+# Run this file using 'qsub busco.qsub filelist.txt'
+# Kathryn Atherton 2019
 
 # All lines starting with "#$" are SGE qsub commands
 
 # Specify a project to run under
 #$ -P mullenl
 
-# Give this job a name CHANGE
-#$ -N busco_new
+# Give this job a name
+#$ -N busco_loop
 
 # Join standard output and error to a single file
 #$ -j y
 
+# Task numbers (73 Adelpha files, #s 47 and 54 do not work, one Limenitis file_)
+# CHANGE THIS BASED ON HOW MANY FILES YOU HAVE
+#$ -t 1-72
+
+# this limits the number of tasks running at once to 5
+# this is because I found that if too many run at once, the busco doesn't run properly
+#$ -tc 5
+
 # Name the file where to redirect standard output and error
-# CHANGE
-#$ -o limenitis_log
+#$ -o all_busco_log
 
 # Send an email when the job begins and when it ends running
 # -m eas
@@ -46,9 +53,27 @@ module load blast+/2.7.1
 module load hmmer/3.2.1
 module load augustus/3.3.2
 module load busco/3.0.2
+
 # do some work
 
-python BUSCO.py -i Rangel_Limenitis_arthemis_astyanax_4tissue_Trinity.fasta -o Limenitis -l /projectnb/mullenl/kate/annotated_trinity_assemblies/insecta_odb9  -m transcriptome 
+# Input file pattern: reads the list of files *see file called make_file_list.sh* 
+infile=`sed -n -e "$SGE_TASK_ID p" $1`
+
+# Saves the input file name within the full path to the file (important if your files are not in the same folder as this file)
+in="/projectnb/mullenl/kate/annotated_trinity_assemblies/annotated_fastas/${infile}" #CHANGE IF YOU NEED A DIFFERENT PATH
+
+# Output file pattern ... this was specific to the SF.## pattern; it makes the output folder/files with the pattern SF.## 
+# (the first 5 characters of the input file name)
+# i.e. short_summary_SF.##.txt
+# CHANGE THIS IF YOU WANT A DIFFERENT PATTERN 
+out=${infile:0:5}
+
+# This is specific to the one Limenitis file that was not named SF.## 
+# if(( "$out" == "Range" )); then
+# 	out="SF.Lim"
+# fi
+
+python BUSCO.py -i $in -o $out -l /projectnb/mullenl/kate/annotated_trinity_assemblies/insecta_odb9  -m transcriptome 
 
 #statements
 # do other work if needed.

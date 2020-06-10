@@ -35,7 +35,7 @@ except ImportError:
     raise SystemExit
 
 #: working directory
-_plot_dir = ''
+_plot_dir = '/projectnb/mullenl/kate/annotated_trinity_assemblies/annotated_fastas/'
 #: r file name
 _r_file = 'busco_figure.R'
 

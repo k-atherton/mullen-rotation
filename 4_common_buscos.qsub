@@ -1,0 +1,47 @@
+#!/bin/bash -l
+
+# Kathryn Atherton 2020
+
+# Run this file with the command "qsub 4_common_buscos.sh"
+
+# Project
+#$ -P mullenl
+
+# Job Name
+#$ -N common_buscos
+
+# Join standard output and error to a single file
+#$ -j y
+
+# Name the file where to redirect standard outputand error
+#$ -o common_buscos_log
+
+# Send an email when the job begins and when it ends running
+# -m eas
+
+# Request a large memory node
+#$ -l mem-per_core=8G
+
+# Request more cores
+#$ -pe omp 1
+
+echo "=========================================================="
+echo "Starting on : $(date)"
+echo "Running on node : $(hostname)"
+echo "Current directory : $(pwd)"
+echo "Current job ID : $JOB_ID"
+echo "Current job name : $JOB_NAME"
+echo "Task index number : $SGE_TASK_ID"
+echo "=========================================================="
+
+# load modules
+
+module load R
+
+
+# Do work
+R --vanilla common_buscos.R
+
+echo "=========================================================="
+echo "Finished on : $(date)"
+echo "=========================================================="

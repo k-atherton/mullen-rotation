@@ -1,0 +1,67 @@
+#!/bin/bash -l
+#
+# Run this file using 'qsub 6_sensory_alignment.qsub'
+# Kathryn Atherton 2020
+
+# All lines starting with "#$" are SGE qsub commands
+
+# Specify a project to run under
+#$ -P mullenl
+
+# Give this job a name
+#$ -N align_loop
+
+# Join standard output and error to a single file
+#$ -j y
+
+# Name the file where to redirect standard output and error
+# CHANGE
+#$ -o alignment_log
+
+# Send an email when the job begins and when it ends running
+# -m e
+
+# Request a large memory node, this will affect your queue time, but it's better to overestimate
+#$ -l mem_per_core=8G
+
+# Request more cores, this will affect your queue time, make sure your program supports multithreading, or it's a waste
+#$ -pe omp 1
+
+# Now we write the script that the compute node will work on.
+
+# First, let's keep track of some information just in case anything goes wrong
+echo "=========================================================="
+echo "Starting on : $(date)"
+echo "Running on node : $(hostname)"
+echo "Current directory : $(pwd)"
+echo "Current job ID : $JOB_ID"
+echo "Current job name : $JOB_NAME"
+echo "Task index number : $SGE_TASK_ID"
+echo "=========================================================="
+
+# load any modules you might use
+# python/2.7.7 is the newest we have and has libraries that the standard version does not.
+
+module load clustalomega
+
+# do some work
+
+while read i; do
+	inname="$i".fasta # CURRENT PATTERN IS [BUSCO ID].FASTA; CHANGE IF THE PATTERN IS DIFFERENT
+	# CHANGE THE PATH TO WHERE THE ALIGNED FASTAS SHOULD GO
+	outname=/projectnb/mullenl/kate/annotated_trinity_assemblies/aligned_fastas/"$i"_aligned.fasta # CURRENT OUTPUT PATTERN IS [BUSCO ID]_aligned.fasta; CHANGE IF YOU WANT A DIFFERENT PATTERN
+
+	qsub clustalomega.qsub "$inname" "$outname"
+	echo "$inname"
+done < sensory_buscos.txt # CHANGE THIS FILE NAME TO THE ONE WITH THE BUSCO IDS THAT YOU WANT TO ALIGN	 
+
+#statements
+# do other work if needed.
+
+echo "=========================================================="
+echo "Finished on : $(date)"
+echo "=========================================================="
+
+
+
+
